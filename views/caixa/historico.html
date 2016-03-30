@@ -1,0 +1,209 @@
+{{extend 'layoutLojinha.html'}}
+<link rel="stylesheet" href="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.css')}}">
+<script src="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.js')}}"></script>
+
+
+<script>
+	$(document).ready(function(){
+
+        $('#minhaTabela').DataTable({
+            // "scrollX": true,
+            "order": [ 5, 'desc' ],
+            "language": {
+              "url": "{{=URL('static','js/tradutorTable.json')}}"
+            }
+            
+        }); 
+
+	    //=== DELETAR ITEN
+		$(".del").on('click',function(){
+			var c = confirm("Tem certeza que deseja deletar a Venda?")
+	      	if (c == true) {
+		        // var i = $(this).parent().parent().index(); //pega posicao da row
+		        var v = $(this).parent().parent()[0].children[0].textContent;//pega valor da celula 4 da row
+		        console.log(v);
+		        // $("#transitory").val(i+";"+v);//envia para o value do input
+		        $("#transitory").val(v);//envia para o value do input
+		        ajax('excluirVendaRegistrada',['transitory']);//chama funcao do python
+		        $(location).attr('href',"historico?menu=caixa");//redireciona a pagina
+	      	}else{
+		        console.log("Registro mantido!")
+		    };			
+		});
+
+		//=== BUSCAR REGISTRO
+		$('#minhaTabela').on('dblclick','tr', function(){
+			var cod = this.children[0].textContent;
+			$(location).attr('href',"historico_print?menu=caixa&cod="+cod);//redireciona a pagina
+		});
+
+		// ** DATA **
+		  var data = new Date();
+		  var mes = (data.getMonth()+1).toString(); // 0-11 (zero=janeiro)
+		  if (mes<10 && mes>0) {
+		    mes = "0"+mes;
+		  }
+		  var ano4    = data.getFullYear(); // 4 dígitos     
+		// FIM DATA
+
+		$(function(){
+		  $("#mesHistoricoErros button").text(mes);
+		  $("#anoHistoricoErros button").text(ano4);
+
+		  $("#mesHistoricoErros ul li a").on('click', function(event) {
+		    $("#mesHistoricoErros button").text($(this).text().substring(0,2));
+		  });
+		  $("#anoHistoricoErros ul li a").on('click', function(event) {
+		    $("#anoHistoricoErros button").text($(this).text());
+		  });
+		});
+
+		$('form input').addClass('form-control')
+	});
+
+	// datepicker
+	$(function() {
+		$( "#no_table_date_initial" ).datepicker({
+		  // defaultDate: "+1w",
+		  changeMonth: true,
+		  // numberOfMonths: 2,
+		  onClose: function( selectedDate ) {
+		    $( "#no_table_date_final" ).datepicker( "option", "minDate", selectedDate );
+		  }
+		});
+		$( "#no_table_date_final" ).datepicker({
+		  // defaultDate: "+1w",
+		  changeMonth: true,
+		  // numberOfMonths: 2,
+		  onClose: function( selectedDate ) {
+		    $( "#no_table_date_initial" ).datepicker( "option", "maxDate", selectedDate );
+		  }
+		});
+
+	    $('fieldset').append('<span class="glyphicon glyphicon-calendar dt1"></span> <span class="glyphicon glyphicon-calendar dt2"></span>')
+	});
+  </script>
+</script>
+<style>
+	.no-select {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		-o-user-select: none;
+		user-select: none;
+	}
+
+	#transitory, .btD {display:none;}
+	.dest{color:#9E1818;}	
+	#dataTable tbody tr:hover{
+		cursor: pointer;
+	}
+	.r{margin-bottom: 10px;}
+	tr{cursor:pointer;}
+	.btDD a.del {
+    	margin-left: -2px !important;
+	}
+	#minhaTabela tbody tr:first-child{
+		background-color: #E9FFEA;
+	}
+
+	form label{display:none;}
+	
+	#submit_record__row .w2p_fw input{
+		width: 121px;
+	}
+	.w2p_fw input{
+		float: left;
+		width: 77px;
+	}
+
+	input.form-control {
+	    width: 157px;
+	    float: left;
+	    margin-right: 5px;
+	}
+
+	.dt2 {
+	    right: 171px !important;
+	    top: 8px;
+	    color: #C7C7C7;
+	}
+	span.glyphicon.glyphicon-calendar.dt1 {
+    	right: 315px !important;
+    	top: 9px !important;
+    	color: #C7C7C7;
+	}
+	div.error_wrapper {
+    	float: left;
+	}
+	.procurar {
+    	width: 696px;
+    	position: relative;
+	}
+	div#date_initial__error {
+	    position: absolute;
+	    left: 27px;
+	    top: -26px;
+	}
+	#no_table_date_final__row .error_wrapper {
+	    position: absolute;
+	    left: 192px;
+	    top: -26px;
+	}
+</style>
+
+
+<input type="text" id="transitory" name="transitory">
+<div class="row">
+	
+</div>
+<h2>Histórico das vendas <small> referente o mês atual! {{=mesAtual}}</small></h2>
+<hr>
+	<!-- ===================== -->
+	<div class="procurar">
+		{{=form}}
+		<span>Escolha estre as datas!</span>
+	</div>
+<hr>
+<!-- table -->
+<table id="minhaTabela" class="table hover table-striped" cellspacing="0" width="100%" >
+<thead>
+	<tr>
+		<th>Codigo</th>
+		<th>Tipo</th>
+		<th>Valor pago</th>
+		<th>Desconto</th>
+		<th>Cliente</th>
+		<th>Data Venda</th>
+		<th></th>
+	</tr> 
+	<tbody>
+		{{for venda in formListar:}}
+			{{if venda.deletado == False:}}
+				<tr>
+					<td>{{=venda.codigoVenda}}</td>
+					<td>{{=venda.tipoVenda}}</td>
+					<td>{{=double_real(venda.valorVenda).real()}}</td>
+					<td>{{=double_real(venda.valorDesconto).real()}}</td>
+					<td>{{=venda.clienteEmail}}</td>
+					<td>{{=venda.dataVenda}}</td>
+				{{if auth.has_membership('admin'):}}	
+					<td class="btDD">
+						<a class="btn btn-default del btn-xs" href="#"><span class="glyphicon glyphicon-remove"></span></a>
+					</td>
+				{{else:}}
+					<td class="btDD">
+						<a class="btn btn-default btn-xs" disabled href="#"><span class="glyphicon glyphicon-remove"></span></a>
+					</td>
+				{{pass}}	
+				
+				</tr>
+			{{pass}}		
+		{{pass}}			
+	</tbody>
+</thead>
+</table>
+
+

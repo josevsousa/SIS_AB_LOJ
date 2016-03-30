@@ -1,0 +1,69 @@
+{{extend 'layoutLojinha.html'}}
+
+<script src="{{=URL('static','js/jquery.mask.js')}}"></script>
+<script>
+	$(document).ready(function(){
+
+		$('#funcionarios_celular').mask("(99) 99999-9999");
+		$('#funcionarios_fixo').mask("(99) 9999-9999");
+		$('#funcionarios_cnpj_cpf').mask('00000000000000');
+		$('#funcionarios_insc').mask('0000000000000000');
+		$('#funcionarios_cep').mask('00000.000');
+		// auto
+		$('input[type=text]').addClass('form-control ip_text');
+		$('form').addClass('formEditar');
+		$('input[type=submit]').val('Cadastrar');
+		$("select").addClass('form-control');
+		$("tbody tr:nth-child(5)").css('display','none');
+
+		$("#SelectItensTipoPagamento").on('change',function(e){
+			console.log(e)
+		});
+		// incrementa o ultimo numero de funcionario
+		// {{#x = len(db(Funcionarios.id>0).select())+1}}
+		{{max = db.funcionarios.matricula.max()
+			x = int(db().select(max).first()[max])+1
+		}}
+		$('#funcionarios_matricula').val('{{=str(x).zfill(4)}}')
+
+	});
+</script>
+<style>
+	input#clientes_foto_cliente {
+    	margin-top: 8px;
+	}
+	.formm form table {width: 100%}
+	.titVolt {
+	    display: inline-flex;
+	}
+	.titVolt h3 {
+    	padding: 3px 14px;
+	}
+	hr {
+    	margin-top: 0px;
+	}
+	input#funcionarios_Cel {
+	    width: 75%;
+	}
+</style>
+<div class="titVolt">	
+	<nav>
+	  <ul class="pager">
+	    <li class="previous"><a href='listarFuncionarios?menu=funcionarios'><span aria-hidden="true">&larr;</span> voltar</a></li>
+	    <!-- <li class="next"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li> -->
+	  </ul>
+	</nav>
+	<h3>Cadastro de Funcionário</h3>
+</div>	
+<hr>
+<div class="row">
+	<div class="col-md-6 formm">
+		{{=formCadastro}}
+	</div>
+	<div class="col-md-6">
+		<h3>Número de matrícula automático!</h3>
+		<p>O número de matrícula para o novo ítem, é a sequência da útima matrícula cadastra</p>
+		<p>Se você preferir altere o número de matrícula para um novo número.</p>
+	</div>
+</div>
+

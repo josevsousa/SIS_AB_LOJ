@@ -1,0 +1,61 @@
+{{extend 'layoutLojinha.html'}}
+
+<script src="{{=URL('static','js/jquery.mask.js')}}"></script>
+<script>
+	$(document).ready(function(){                   //({ prefix:'R$ ',
+		$("#produtos_preco_produto_lojinha").maskMoney({ allowNegative: true, thousands:'', decimal:'.'});
+
+		$('#representantes_celular').mask("(99) 99999-9999");
+		$('#representantes_fixo').mask("(99) 9999-9999");
+		// $('#representantes_cpf').mask('000.000.000-00');
+		$('#representantes_cnpj_cpf').mask('00000000000000');
+		$('#representantes_insc').mask('0000000000000');
+		$('#representantes_cpf').mask('00000.000');
+
+		// auto
+		$('input[type=text]').addClass('form-control ip_text');
+		$('form').addClass('formEditar');
+		$('input[type=submit]').val('Cadastrar');
+		// $("tbody tr:nth-child(4)").css('display','none')
+		$('select').addClass('generic-widget form-control');
+		// incrementa o ultimo numero de funcionario
+		//{{#x = len(db(Representantes.matricula).select())+1}}
+		{{max = db.representantes.matricula.max()
+			x = int(db().select(max).first()[max])+1
+		}}
+		$('#representantes_matricula').val('{{=str(x).zfill(4)}}')
+
+	});
+</script>
+<style>
+	.formm form table{width: 100%}
+	.titVolt {
+	    display: inline-flex;
+	}
+	.titVolt h3 {
+    	padding: 3px 14px;
+	}
+	hr {
+    	margin-top: 0px;
+	}
+</style>	
+<div class="titVolt">
+	<nav>
+	  <ul class="pager">
+	    <li class="previous"><a href="listarRepresentantes?menu=representantes"><span aria-hidden="true">&larr;</span> voltar</a></li>
+	    <!-- <li class="next"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li> -->
+	  </ul>
+	</nav>
+	<h3>Cadastro de representante</h3>
+</div>
+<hr>
+<div class="row">
+	<div class="col-md-6 formm">
+		{{=formCadastro}}
+		
+	</div>
+	<div class="col-md-6">
+		
+	</div>
+</div>
+

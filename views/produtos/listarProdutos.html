@@ -1,0 +1,202 @@
+{{extend 'layoutLojinha.html'}}
+
+<script>
+	$(document).ready(function(){
+            // $('#minhaTabela table').attr('id', 'dataTable').addClass('display');
+            $('#dataTable').DataTable({
+	            // "scrollX": true,
+	            "language": {
+	              "url": "{{=URL('static','js/tradutorTable.json')}}"
+	            } 
+		    });
+		    $('.fechar').on('click',function(){
+		    	
+		    		var td = $(this).parent().parent().parent().children()[0];
+		    		var x = td.textContent;
+		    		var c = confirm("Deseja mesmo apagar?");
+		    		if (c == true) {
+		    			//--
+		    			$("input[name=cod]").val(x);
+		    			ajax('deletar',['cod']); //chamar a funcao para apagar no banco
+		    			// $(this).parent().parent().parent().hide(400) //esconder a 
+		    			location.reload();
+		    		}else{
+		    			console.log("Nao apagado")
+		    		};
+		    });
+		    $('input[type=search]').addClass('form-control');
+
+		    $('.config_Prod').on('click', function(event) {
+		    	// event.preventDefault();
+		    	/* Act on the event */
+		    	$('#config_produtos').show(400);
+		    });
+		    $('#fechar_painel_produtos').on('click', function(event) {
+		    	$('#config_produtos').hide(400);
+		    	/* Act on the event */
+		    });
+		 //   	$(".btAlterarr").on('click',function(){
+			// 	var c = confirm("Tem certeza que deseja deletar a Venda?")
+		 //      	if (c == true) {
+
+		 //      	}else{
+			//         console.log("Registro mantido!")
+			//     };			
+			// });
+			$('#btAlterarr').on('click',function(){
+				var c = confirm("Tem certeza que deseja amentar os preços?")
+				if ($('#valorAumento').val() != '0'){
+			      	if (c == true) {
+			      		ajax('almentarValorProduto', ['valorAumento'], $(location).attr('href',"listarProdutos?menu=produtos"));
+			      	}else{
+				        console.log("Registro mantido!");
+				    };		
+				}else{
+					alert("Valor não pode ser zero '0' ");
+				}    		
+			});			
+			$('#resetar').on('click',function(){
+				var c = confirm("Tem certeza que deseja resetar os preços para o anterior?")
+		      	if (c == true) {
+		      		ajax('resetarValorProduto');
+		      		$(location).attr('href',"listarProdutos?menu=produtos")
+		      	}else{
+			        console.log("Registro mantido!");
+			    };   		
+			});
+
+	})//fim do ready
+
+</script>
+<style type="text/css">
+	td.opcoes {width: 120px !important;}
+/*	td#opcoes {width: 201px;}
+	td#opcoes div{float: right;}
+	td#opcoes div button{margin-right: 0px !important}
+	.idS {display:none !important;}
+	.JpositionA{float: right;}
+*/
+	.JpositionA a{margin-right: 0px !important}
+	#cod{display:none;}
+	td {
+	    border: 1px solid #EFEFEF;
+	}
+/*	#dataTable th:first-child, #dataTable td:first-child{
+		width: 20px;
+	}
+*/
+div#config_produtos {
+	display: none;
+	margin-top: 10px;
+/*    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #CCC;	
+*/}
+.p {
+ 
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+    padding: 12px;
+    border-radius: 5px;
+  
+}
+</style>
+
+<input type="text" id="cod" name="cod">
+<div id="minhaTabela" class="animated fadeInDown">
+{{if auth.has_membership('admin'):}}
+	<a class="btn btn-default" href="/{{=request.application}}/produtos/cadastrarProdutos?menu=produtos"><span class="glyphicon glyphicon-plus"></span> Novo Produto</a>
+	<a class="btn btn-default config_Prod" href="#"><span class="glyphicon glyphicon-cog"></span></a>
+{{else:}}
+	<a class="btn btn-default" disabled="disabled" href="#"><span class="glyphicon glyphicon-plus"></span> Novo produto</a>
+	<a class="btn btn-default" disabled="disabled" href="#"><span class="glyphicon glyphicon-cog"></span></a>
+{{pass}}
+
+
+<!-- <div id="config_produtos" >
+	<div class="row">
+		<div class="col-md-12">
+			
+			<h4><span class="glyphicon glyphicon-wrench conff"></span>   Configuração! <small> altera comportamentos da tabela produtos.</small></h4>
+		</div>
+		<div class="col-md-12">
+			<a href="#" id="fechar_painel_produtos" class="btn btn-default">Fechar painel</a>
+		</div>
+	</div>
+</div>
+ -->
+<div class="panel panel-default" id="config_produtos" >
+  <div class="panel-heading">
+    <h3 class="panel-title"><span class="glyphicon glyphicon-wrench conff"></span> Configuração dos produtos</h3>
+  </div>
+  <div class="panel-body">
+  		<div class="row">
+    		<div class="col-md-4">
+    			<div class="p">
+    				<h4 for="basic-url">Ajustar os preços da tabela</h4>
+					<!-- b -->
+					<div class="input-group"> 
+					<span class="input-group-addon" id="sizing-addon1">%</span>
+						<input type="number" id="valorAumento" name="valorAumento" class="form-control" aria-label="Text input with multiple buttons"> 
+						<div class="input-group-btn"> 
+							<button type="button" id="btAlterarr" class="btn btn-default">Alterar</button> 
+						</div> 
+					</div>
+					<!-- fim b -->
+					<p>O valor digitado é o valor em porcentagem que será alterado a todos os campos <strong>PREÇO</strong> da tabela.</p>
+				</div>	
+    		</div>
+    		<div class="col-md-4">
+	    		<!-- <div class="p">
+	    			<label for="basic-url">Última alteração!</label>
+					<p> <small>	Data : <mark>{{=ultima_alteracao}}</mark>.</small></p>
+					<p> <small>	Reajuste : <mark>{{=ultima_porcentage}} %</mark>.</small></p>
+				</div> -->
+				<div class="alert alert-warning alert-dismissible" role="alert">
+  					<!-- <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> -->
+  					<h4>Última alteração</h4>
+  					<strong>Data: </strong> {{=ultima_alteracao}}.<br>
+  					<strong>Reajuste: </strong> {{=ultima_porcentage}}%.<br>
+  					Reset para a última atualização: 
+					<a class="btn btn-default " id="resetar"  href="#"><span class="glyphicon glyphicon-retweet"></span></a>
+				</div>	
+    		</div>
+
+    		<div class="col-md-4">
+    			
+    		</div>
+    	</div>	
+    	<br>
+    	<div class="row">
+			<div class="col-md-12">
+				<a href="#" id="fechar_painel_produtos" class="btn btn-default"><span class="glyphicon glyphicon-remove"></span> Fechar painel</a>
+			</div>
+		</div>
+	</div>
+</div>
+<hr>
+<table id="dataTable" class="table table-striped hover " cellspacing="0" width="100%" >
+<thead>
+	<tr>
+		<th>Codigo da peça</th>
+		<th>Nome do produto</th>
+		<th>Tamanho</th>
+		<th>Preço</th>
+		<th></th>
+	</tr> 
+	<tbody>
+		{{for produto in formListar:}}
+			<tr>
+				<td>{{=produto.produtos.codigo_produto}}</td>
+				<td>{{=produto.produtos.nome_produto}}</td>
+				<td>{{=produto.produtos.tamanho}}</td>
+				<td>{{=double_real(float(produto.produtos.preco_produto_lojinha)).real()}}</td>
+				<td class="opcoes">{{=produto.campos_virtual.botoes}}</td>
+			</tr>
+		{{pass}}		
+	</tbody>
+</thead>
+</table>
+
+</div>

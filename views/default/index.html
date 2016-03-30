@@ -1,0 +1,362 @@
+    {{extend 'layoutLojinha.html'}}
+    <link rel="stylesheet" href="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.css')}}">
+    <script src="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.js')}}"></script>
+	<script src="{{=URL('static','js/highcharts.js')}}"></script>
+	<script src="{{=URL('static','js/exporting.js')}}"></script>
+    <style>
+    .debito{color: red;}
+    div#date_initial__error {
+        position: absolute;
+        left: 27px;
+        top: -26px;
+    }
+    #no_table_date_final__row .error_wrapper {
+        position: absolute;
+        left: 192px;
+        top: -26px;
+    }
+    .check{
+        padding: 3px;       
+    }
+    .check div{
+    width: 20px;
+    height: 22px;
+    cursor: pointer;
+    margin: 0 auto;
+    margin-top: 0px;
+    }
+    .check div.check_False{
+        background:url('{{=URL('static','images/checkBOX.png')}}') center 0px no-repeat;   
+    }
+    .check div.check_True{
+        background:url('{{=URL('static','images/checkBOX.png')}}') center -24px no-repeat;                               
+    }
+    .obs_iten{
+        padding: 2px !important;
+    }
+    .obs_iten input{
+        margin: 0 auto;
+        width: 95%;
+    }
+    span.ee {
+        padding-left: 2px;
+        color: red;
+        display: none;
+    }
+    #tabela_creditos th:last-child {
+        text-align: center;
+    }
+    .dataDisplay{
+            font-size: x-large;
+    }
+    #telaRepresentantes img{
+        width: 200px;
+        margin-left: 40%;
+    }
+    </style>
+ <script>
+
+    //esperando a funcao ser chamada no ajax
+    function checkOk(){
+        $('.check div').on('click',function(){
+            statusAtual = $(this).attr('class');//status do check 
+            // console.log(statusAtual);
+            cod  = $(this).parent().parent().children()[0];//id do row do check
+            cod = cod.textContent;
+            if (statusAtual == "check_True") {
+                //mudar par check_False
+                $(this).removeClass('check_True').addClass('check_False');
+                //passar o False para o Itens.status
+                updateStat(cod,'False');
+            }else{
+                //mudar para check_True
+                $(this).removeClass('check_False').addClass('check_True');
+                //passar o True para o Itens.status
+                updateStat(cod,'True');
+            };
+        });
+
+        //alinha a pagina no scroll
+        // $('html, body').animate({scrollTop:83}, 1040);
+    };
+
+
+    $(document).ready(function(){
+            // ---- DATA
+            var data = new Date();
+            var ano = data.getFullYear();
+            var mes = (data.getMonth()+1).toString(); // 0-11 (zero=janeiro)
+            var mesExtenso = "";
+            // ---- 
+            if (mes == 1) {
+                mesExtenso = 'Janeiro'
+            }else if(mes == 2){
+                mesExtenso = 'Fevereiro';
+            }else if(mes == 3){
+                mesExtenso = 'Março';
+            }else if(mes == 4){
+                mesExtenso = 'Abril';
+            }else if(mes == 5){
+                mesExtenso = 'Maio';
+            }else if(mes == 6){
+                mesExtenso = 'Junho';
+            }else if(mes == 7){
+                mesExtenso = 'Julho';
+            }else if(mes == 8){
+                mesExtenso = 'Agosto';
+            }else if(mes == 9){
+                mesExtenso = 'Setembro';
+            }else if(mes == 10){
+                mesExtenso = 'Outubro';
+            }else if(mes == 11){
+                mesExtenso = 'Novembro';
+            }else{
+                mesExtenso = 'Desembro';
+            };
+            // ----
+            if (mes<10 && mes>0) {
+                mes = "0"+mes;
+            };
+            // ----- FIM DATA
+
+            $('#buscarCq').on('click',function(){
+                var d1 = $('#no_table_date_initial').val();
+                var d2 = $('#no_table_date_final').val();
+                if (d1 != '' && d2 != '') {
+                    $('#transitory').val(d1+';'+d2);
+                    ajax('cheques_boletos_buscar',['transitory'], 'grid');
+                    $('.ee').hide(400)
+                } else{
+                    $('.ee').show();
+                };
+            });            
+            $('#buscarCqR').on('click',function(){
+
+                var d1 = $('#no_table_date_initialR').val();
+                var d2 = $('#no_table_date_finalR').val();
+                if (d1 != '' && d2 != '') {
+                    $('#transitory').val(d1+';'+d2);                    
+                    ajax('tela_representantes_busca', ['transitory'], 'telaRepresentantes');
+                    console.log(d1+" - "+d2)  
+                };
+            });
+
+            $(".cheques_boletos").on('click', function() {
+                $('#no_table_date_initial, #no_table_date_final').val('');
+               
+                $('.dataDisplay').text(mesExtenso+' de '+ano);
+
+                var busca = ano+"-"+mes;
+
+                $('#transitory').val(busca);
+                ajax('cheques_boletos',['transitory'],'grid');
+                /* Act on the event */
+            });   
+
+        // TAB REPRESENTANTES
+            // var table = $('#representantes').DataTable();
+     
+            // $('#representantes tbody').on('click', 'tr', function () {
+            //     var data = table.row( this ).data();
+            //     alert( 'You clicked on '+data[0]+'\'s row' );
+            // } );
+
+            $("#repress").on('click',function(){
+
+                $('#no_table_date_initialR, #no_table_date_finalR').val('');
+            
+                $('.dataDisplay').text(mesExtenso+' de '+ano);
+                var busca = ano+"-"+mes;
+
+                $('#transitory').val(busca);
+
+                ajax('tela_representantes', ['transitory'], 'telaRepresentantes')
+                // $('.telaRepresentantes').load('representantes.html')
+            })
+
+        // FIM TAB REPRESENTANTES
+
+
+
+
+
+
+            // datepicker
+            $(function() {
+                $( "#no_table_date_initial" ).datepicker({
+                  // defaultDate: "+1w",
+                  changeMonth: true,
+                  // numberOfMonths: 2,
+                  onClose: function( selectedDate ) {
+                    $( "#no_table_date_final" ).datepicker( "option", "minDate", selectedDate );
+                  }
+                });
+                $( "#no_table_date_final" ).datepicker({
+                  // defaultDate: "+1w",
+                  changeMonth: true,
+                  // numberOfMonths: 2,
+                  onClose: function( selectedDate ) {
+                    $( "#no_table_date_initial" ).datepicker( "option", "maxDate", selectedDate );
+                  }
+                });
+                $('fieldset').append('<span class="glyphicon glyphicon-calendar dt1"></span> <span class="glyphicon glyphicon-calendar dt2"></span>')
+            });            
+            $(function() {
+                $( "#no_table_date_initialR" ).datepicker({
+                  // defaultDate: "+1w",
+                  changeMonth: true,
+                  // numberOfMonths: 2,
+                  onClose: function( selectedDate ) {
+                    $( "#no_table_date_finalR" ).datepicker( "option", "minDate", selectedDate );
+                  }
+                });
+                $( "#no_table_date_finalR" ).datepicker({
+                  // defaultDate: "+1w",
+                  changeMonth: true,
+                  // numberOfMonths: 2,
+                  onClose: function( selectedDate ) {
+                    $( "#no_table_date_initialR" ).datepicker( "option", "maxDate", selectedDate );
+                  }
+                });
+                $('fieldset').append('<span class="glyphicon glyphicon-calendar dt1"></span> <span class="glyphicon glyphicon-calendar dt2"></span>')
+            });
+
+ 
+
+            // $('#tabela_creditos').DataTable({
+            //     "scrollX": true,
+            //     // "order": [ 6, 'desc' ],
+            //     "language": {
+            //     "url": "{{=URL('static','js/tradutorTable.json')}}"
+            //     }
+            // }); 
+
+            for (var i = $('.ui-datepicker-calendar td a').length - 1; i >= 0; i--) {
+                var dia = $('.ui-datepicker-calendar td a')[i].text;
+                // if (dia == 7) {
+                //     var md = $('.ui-datepicker-calendar td a')[i];
+                //     console.log( md.style.color = "red" )
+                // };
+                console.log($('.ui-datepicker-calendar'))
+            };
+
+
+            // $('.ui-datepicker-calendar td a').map(function(item){
+            //     if ((item) == 5) {
+            //         console.log('jose')
+            //     }else{
+            //         console.log(item.parent
+            //     };
+            // })
+            
+            // console.log( $('.ui-datepicker-calendar td a').length ) 
+            // $("#datepicker").datepicker( "setDate", "10/12/2012" );
+
+               
+
+
+
+
+
+        });//fim jquary ready
+    </script>
+
+    <input type="text" id="transitory" name="transitory" style='display:none'>
+	<h2>Relatórios de movimento!</h2>
+    
+
+	<!-- <h3>Teste em produção com pull</h3> -->
+	<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+	  <div class="panel panel-default">
+	    <div class="panel-heading" role="tab" id="headingOne">
+	      <h4 class="panel-title">
+	        <a role="button" id="repress" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+	          <span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span> Histórico de venda dos Representantes
+	        </a>
+	      </h4>
+	    </div>
+	    <div id="collapseOne" class="panel-collapse collapse " role="tabpanel" aria-labelledby="headingOne">
+	      <div class="panel-body">
+           <span class="ee">Os dois campos obrigatórios</span>
+            <div class="row">
+                <div class="col-md-6">
+                    <form class="form-inline" action='#'>
+                          <div class="form-group">
+                           <input class="form-control" id="no_table_date_initialR" name="date_initial" type="text" value="" placeholder="Data inicial">
+                          </div>
+                          <div class="form-group">
+                            <input type="text" class="form-control" id="no_table_date_finalR" placeholder="Data final">
+                          </div>
+                          <a type="text" id="buscarCqR" class="btn btn-default">Buscar</a>
+                    </form>
+                </div>                
+                <div class="col-md-6 dataDisplay"></div>    
+            </div>    
+            <hr>
+            <div id="telaRepresentantes">
+	           <img src="{{=URL('static','images/loading.gif')}}" alt="">
+            </div>   
+	      </div>
+	    </div>
+	  </div>
+	  <div class="panel panel-default">
+	    <div class="panel-heading" role="tab" id="headingTwo">
+	      <h4 class="panel-title">
+	        <a class="collapsed cheques_boletos" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+	          <span class="glyphicon glyphicon-stats" aria-hidden="true"></span> Vencimentos de cheques e Boletos!
+	        </a>
+	      </h4>
+	    </div>
+	    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+          <div class="panel-body">
+           <!-- <div id="grid"></div> -->
+            <span class="ee"> Os dois campos obrigatórios</span>
+            <div class="row">
+                <div class="col-md-6">
+                    <form class="form-inline" action='#'>
+                          <div class="form-group">
+                           <input class="form-control" id="no_table_date_initial" name="date_initial" type="text" value="" placeholder="Data inicial">
+                          </div>
+                          <div class="form-group">
+                            <input type="text" class="form-control" id="no_table_date_final" placeholder="Data final">
+                          </div>
+                          <a type="text" id="buscarCq" class="btn btn-default">Buscar</a>
+                    </form>
+                </div>
+                
+                <div class="col-md-6 dataDisplay"></div>    
+            </div>    
+            <hr>
+            <table id="tabela_creditos" class="table hover table-bordered"  >
+                <thead>
+                    <th>Código venda</th>
+                    <th>Tipo crédito</th>
+                    <th>Data Vencimento</th>
+                    <th>Parcela</th> 
+                    <th>Valor</th>
+                    <th>Cliente</th>  
+                    <th>Representante</th>
+                    <th>Status</th>
+                </thead>  
+                <tbody id="grid"></tbody>
+            </table> 
+          </div>
+	    </div>
+	  </div><!-- 
+	  <div class="panel panel-default">
+	    <div class="panel-heading" role="tab" id="headingThree">
+	      <h4 class="panel-title">
+	        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+	          proximo
+	        </a>
+	      </h4>
+	    </div>
+	    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+          <div class="panel-body">           
+           Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+         
+          </div>
+	    </div>
+	  </div> -->
+	</div>
+
