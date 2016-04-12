@@ -57,7 +57,7 @@ def produto():
         valorTotal = int(qtde)*float(valorUn)
     else:
         valorUn = (db(db.produtos.codigo_produto == codigo).select('preco_produto_lojinha'))[0].preco_produto_lojinha
-        valorTotal = int(qtde)*float(valorUn)
+        valorTotal = int(qtde)* round(float(valorUn),2)
         pass
     
     Itens.insert(codigoVenda=session.codigo_venda,codigoIten=codigo,produto=produto,quantidade=qtde,valorUnidade=valorUn,valorTotal=valorTotal)
