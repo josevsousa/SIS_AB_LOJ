@@ -50,12 +50,19 @@ def produto():
     codigo = request.vars.codigo
     produto = request.vars.produto
     qtde = request.vars.qtde
+    valorVariado = request.vars.valor
 
-
-    valorUn = (db(db.produtos.codigo_produto == codigo).select('preco_produto_lojinha'))[0].preco_produto_lojinha
-    valorTotal = int(qtde)*float(valorUn)
+    if codigo == '1003':
+        valorUn = valorVariado.replace('R$','').replace(' ','').replace(',','')
+        valorTotal = int(qtde)*float(valorUn)
+    else:
+        valorUn = (db(db.produtos.codigo_produto == codigo).select('preco_produto_lojinha'))[0].preco_produto_lojinha
+        valorTotal = int(qtde)*float(valorUn)
+        pass
+    
     Itens.insert(codigoVenda=session.codigo_venda,codigoIten=codigo,produto=produto,quantidade=qtde,valorUnidade=valorUn,valorTotal=valorTotal)
-    #redirect(URL('etapa_2?menu=caixa')) 
+    
+    #-----------------redirect(URL('etapa_2?menu=caixa')) 
  
 def delItem():
     index = request.vars.transitory

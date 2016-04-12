@@ -1,9 +1,11 @@
 {{extend 'layoutLojinha.html'}}
 <link rel="stylesheet" href="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.css')}}">
 <script src="{{=URL('static','jquery-ui-1.11.4.custom/jquery-ui.js')}}"></script>
+<script src="{{=URL('static','js/jquery.maskMoney.js')}}"></script>
 
 <script>
   $(document).ready(function(){
+      $('#valor').maskMoney({prefix:'R$ ', allowNegative: true, affixesStay: true});
       $('#codigo').focus();
       //=========== DATATABLE ================ 
         // $('#minhaTabela table').attr('id', 'dataTable').addClass('display');
@@ -60,13 +62,26 @@
 
                       //seu valor digitado
                       var codDigitado = $(this).val();
+                    
                       //testa seu valor digitado
                       var buscaCodigo = lista_NomeCodigo.some(function(item){
                         return item.codigo === codDigitado; 
                       });  
                       if (buscaCodigo) {
+                        
+
                         $(this).removeClass('codigoError');
-                        $("#qtde").attr('disabled',false).focus();
+                        console.log();
+                        if ($(this).val() != 1003) {
+                          $('#valor').val('').hide(400);
+                          $("#qtde").attr('disabled',false).focus();
+                        }else{
+
+                          $('#valor').val('').show(400).focus();
+                          $('#produto').animate({'width':'350px'}, 400);
+
+                        }
+                        
                         //busca o nome pelo codDigitado
                         var buscaNome = lista_NomeCodigo.filter(function(item){
                           return item.codigo === codDigitado;
@@ -88,6 +103,15 @@
                       //   $("#produto").val(x[0].nome);
           });
 
+          //valor do campo variados
+          $('#valor').on('change',function() {
+            if($(this).val() != ''){
+              $("#qtde").attr('disabled',false).focus();
+            }else{
+              $('#qtde').val('').attr('disabled',true);
+              $(this).focus();
+            }
+          });
 
 
           //libera a tecla addItem
@@ -100,7 +124,7 @@
 
           $("#addItem").on('click',function(){
             $(this).text("Registr...").attr('disabled',true);
-            ajax('produto',['codigo','qtde','produto']);
+            ajax('produto',['codigo','qtde','produto','valor']);
            // $(location).attr('href',"etapa_2?menu=caixa");//redireciona a pagina location.reload()
            location.reload()
           })
@@ -115,13 +139,26 @@
       $( "#produto" ).autocomplete({
         source: listaNomeProdutos,
          select: function( event, ui ) {
-          //add produto ao input produto
-          $("#qtde").attr('disabled',false).focus();
-          var x = lista_NomeCodigo.filter(function(item){
-            return item.nome === ui.item.value;
-          });
-          //add ao campo produto
-          $("#codigo").val(x[0].codigo)
+          if (ui.item.value != 'Itens Variados') {
+            //add produto ao input produto
+            $("#qtde").val('').attr('disabled',false).focus();
+            var x = lista_NomeCodigo.filter(function(item){
+              return item.nome === ui.item.value;
+            });
+            //add ao campo produto
+            $("#codigo").val(x[0].codigo);
+            $('#valor').hide(400);
+            $('#produto').animate({'width':'380px'}, 400);
+          }else{
+
+            var x = lista_NomeCodigo.filter(function(item){
+              return item.nome === ui.item.value;
+            });
+            $('#qtde').val('').attr('disabled',true);
+            $("#codigo").val(x[0].codigo);
+            $('#valor').show(400).focus();
+            $('#produto').animate({'width':'350px'}, 400);
+          };
         }
       }).on( "autocompletecreate", function( event, ui ) {} )
       //------------------------- fim popula produtos
@@ -194,6 +231,13 @@
   a, a:link, a:hover {
     text-decoration: none;
   }
+  .container {
+    min-width: 1183px !important;
+}
+  input#valor {
+    width: 120px;
+    display: none;    
+  }
   /*--grid--*/
 /*  #minhaTabela thead tr th:nth-child(6), #minhaTabela tbody tr td:nth-child(6){
     width: 45px !important;  }
@@ -220,7 +264,7 @@
     width: 100px;
   }
   #produto{
-    width: 500px;
+    width: 420px;
   }
   .highlight{
     padding: 16px 15px 22px 16px;
@@ -267,6 +311,7 @@
         <div class="row addItem">
            <input class="form-control input-lg ui-autocomplete-input" id="codigo" name="codigo" type="number" placeholder="codigo" autocomplete="off">
            <input class="form-control input-lg" id="qtde" name="qtde" type="number" placeholder="qtde" disabled="disabled" autocomplete="off">
+           <input class="form-control input-lg" id="valor" name="valor" type="text" placeholder="R$" autocomplete="off">
            <input class="form-control  input-lg ui-autocomplete-input" id="produto" name="produto" type="text" placeholder="Produto" autocomplete="off">
            <button type="button" id="addItem" class="btn btn-success btn-lg" disabled="disabled">Adcionar</button>
            
