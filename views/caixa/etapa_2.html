@@ -5,7 +5,9 @@
 
 <script>
   $(document).ready(function(){
-      $('#valor').maskMoney({prefix:'R$ ', allowNegative: true, affixesStay: true});
+      //$('#valor').maskMoney({prefix:'R$ ', allowNegative: true, affixesStay: true, precision: true});
+
+ 
       $('#codigo').focus();
       //=========== DATATABLE ================ 
         // $('#minhaTabela table').attr('id', 'dataTable').addClass('display');
@@ -104,15 +106,14 @@
           });
 
           //valor do campo variados
-          $('#valor').on('change',function() {
+          $('#valor').on('change',function(event) {
             if($(this).val() != ''){
               $("#qtde").attr('disabled',false).focus();
             }else{
               $('#qtde').val('').attr('disabled',true);
               $(this).focus();
-            }
+            };
           });
-
 
           //libera a tecla addItem
           $("#qtde").change(function(){
@@ -147,7 +148,7 @@
             });
             //add ao campo produto
             $("#codigo").val(x[0].codigo);
-            $('#valor').hide(400);
+            $('#valor').val('').hide(400);
             $('#produto').animate({'width':'380px'}, 400);
           }else{
 
@@ -310,9 +311,9 @@
            <!-- row -->
         <div class="row addItem">
            <input class="form-control input-lg ui-autocomplete-input" id="codigo" name="codigo" type="number" placeholder="codigo" autocomplete="off">
-           <input class="form-control input-lg" id="qtde" name="qtde" type="number" placeholder="qtde" disabled="disabled" autocomplete="off">
-           <input class="form-control input-lg" id="valor" name="valor" type="text" placeholder="R$" autocomplete="off">
-           <input class="form-control  input-lg ui-autocomplete-input" id="produto" name="produto" type="text" placeholder="Produto" autocomplete="off">
+           <input class="form-control input-lg" id="qtde" name="qtde" type="number" placeholder="qtde" disabled="disabled" min='1' autocomplete="off">
+           <input class="form-control input-lg" id="valor" name="valor" type="number" placeholder="R$" >
+           <input class="form-control input-lg ui-autocomplete-input" id="produto" name="produto" type="text" placeholder="Produto" autocomplete="off">
            <button type="button" id="addItem" class="btn btn-success btn-lg" disabled="disabled">Adcionar</button>
            
         </div>
