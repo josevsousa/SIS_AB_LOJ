@@ -86,7 +86,7 @@ $(document).ready(function(){
 	        $("#titularNome").removeClass('titular_vazio');
 	        $(".titular").show(400);
 	        parcelar(true);
-	        $('#comprovantePagSeg').text('').hide(400)
+	        $('#comprovantePagSeg').hide(400)
 	      }else{
 	      	$("#titularNome").removeClass('titular_vazio');
 	        zerarDesconto();	        
@@ -396,7 +396,8 @@ $(document).ready(function(){
 		      </div>
 
 		    </div> 
-		    <h2 id="comprovantePagSeg" style="display:none"><b>Cel.:</b> <span> (83) 9992-0746</span></h2> 
+		    {{cli = db(db.clientes.nome==session.cliente).select('celular','operadora')}}
+		    <h2 id="comprovantePagSeg" style="display:none"><b>Cel.:</b> <span>{{=cli[0].celular}} | {{=cli[0].operadora}} </span></h2> 
 		  </div>
 		  <div class="col-md-6 cfr">
 		    <div class="panel panel-default">

@@ -45,6 +45,8 @@ def _():
     ctr = request.controller
 
 if 'auth' in globals():
+
+    auth.settings.expiration = 864000 #10 dias de sessao aberta 
     if not auth.is_logged_in():  
         response.menu = []
     else:  
