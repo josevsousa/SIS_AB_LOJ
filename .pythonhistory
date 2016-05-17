@@ -148,3 +148,36 @@ x
 round(x,2)
 datetime.now()
 quit()
+itens = crud.select(Itens, Itens.codigoVenda == '160516122617',['codigoIten','quantidade','produto','valorUnidade','valorTotal'])
+itens
+print itens[0]
+print itens.codigo
+print itens[0].codigo
+print itens
+itens = db(Itens.codigoVenda == '160516122617').select()
+print itens
+print itens.codigoVenda
+print itens[0].codigoVenda
+cheques = db(Parcelados.codigo == "%s"%codigo).select()
+cheques = db(db.parcelados.codigo == "%s"%codigo).select()
+Parcelados.codigo == 
+cheques = Parcelados.codigo == "%s"%'160503050316'.select()
+cheques = Parcelados.codigo == '160503050316'.select()
+cheques = db(Parcelados.codigo == '160503050316').select()
+cheques = db(Parcelados.codigo == '%s'%'160503050316').select()
+cheques[0]
+cheques[0].parcelas
+cheques[0].parcela
+cheques[0].dataVencimento
+(cheques[0].dataVencimento).strftime('%d/%m/%Y')
+(cheques[0].double_real(valor).real()
+cheques[0].double_real(valor).real()
+cheques[0].(double_real(valor).real())
+(cheques[0].double_real(valor).real())
+double.real(cheques[0].valor).real())
+double.real(cheques[0].valor).real()
+cheques[0].parcela
+cheques[0].valor
+double_real(cheques[0].valor).real()
+quit
+quit()

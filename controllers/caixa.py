@@ -197,25 +197,26 @@ def enviar_email(codigo, email,data):
     tipoVenda = historico[0].tipoVenda 
     dataRomaneio = data
 
-    itens = crud.select(Itens, Itens.codigoVenda == '%s'%codigo,['codigoIten','quantidade','produto','valorUnidade','valorTotal'])
-
-    #gerar grid para email
-
+    # itens = crud.select(Itens, Itens.codigoVenda == '%s'%codigo,['codigoIten','quantidade','produto','valorUnidade','valorTotal'])
+    itens = db(Itens.codigoVenda == '%s'%codigo).select()
+    
+    parcelasCheque = False;
+    
     # CHEQUE?
     if tipoVenda == 'cheque':
-        parcelasCheque = ''
-    else:
-        parcelasCheque = ''
-        pass
+        cheques = db(Parcelados.codigo == '%s'%codigo).select()
+    else:    
+        cheques = ''
 
-
+    # DESCONTO?    
     if desconto != 0.0:
         mostrarDesconto = "[ Total =  R$ %.2f ] - [ Desconto = R$ %.2f ]"%(subTotal,desconto)
     else:
         mostrarDesconto = ''
     pass
+    
     # <!-- codigo, data, itens, sub_total, tipo_pagamento, desconto  -->
-    message = dict(codigo=codigo,itens=itens,sub_total=total,desconto=mostrarDesconto,tipo_pagamento=tipoVenda, cheques=parcelasCheque,data=dataRomaneio)
+    message = dict(codigo=codigo,itens=itens,sub_total=total,desconto=mostrarDesconto,tipo_pagamento=tipoVenda,cheques=cheques,data=dataRomaneio)
     emailSimples = "|---------------- RECIBO DE COMPRA ----------------|\n"\
     " ### ESSE DISPOSITIVO NAO E POSSIVEL VISUALIZAR OS DADOS ###\n"\
     " ### Por gentileza visualize no seu email."
