@@ -19,7 +19,9 @@ def etapa_1():
             #Field('Representante',default=representante , requires = IS_IN_DB(db, Representantes.nome, error_message = 'Escolha um representante'))
         )
     if form.process().accepted:
-        session.cliente = form.vars.Cliente
+        nomeCliente = form.vars.Cliente
+        session.cliente = nomeCliente
+        session.email_Cliente = db(db.clientes.nome == nomeCliente).select('email')[0].email
         #session.representante = db(db.representantes.nome == form.vars.Representante ).select('id')[0].id
         #cria codigo da venda  
         if not session.codigo_venda:
@@ -30,8 +32,17 @@ def etapa_1():
         redirect(URL('etapa_2?menu=caixa')) 
     
     form.add_button('Cadastrar Cliente', URL('clientes','/cadastrarClientes?menu=clientes'))
+
+
+    # #<!-- codigo, data, itens, sub_total, tipo_pagamento, desconto  -->
+    # message = dict(nome='jose ok')
+    # mail.send(to=['jose.vicente.de.sousa@gmail.com'],
+    #     subject='Recebido da artesanalbaby',
+    #     message = ['confira seu email!', response.render('romaneio.html',message)]
+    #     )
         
     return dict(form=form)   
+
 
 
 # ------------------ ETAPA 2 ---------------------
@@ -53,11 +64,12 @@ def produto():
     valorVariado = request.vars.valor
 
     if codigo == '1003':
-        valorUn = valorVariado.replace('R$','').replace(' ','').replace(',','')
-        valorTotal = int(qtde)*float(valorUn)
+        valorUn = round(float(valorVariado.replace('R$','').replace(' ','').replace(',','')),2)
+        valorTotal = int(qtde)*valorUn
     else:
-        valorUn = (db(db.produtos.codigo_produto == codigo).select('preco_produto_lojinha'))[0].preco_produto_lojinha
-        valorTotal = int(qtde)* round(float(valorUn),2)
+        valorUn = round(float((db(db.produtos.codigo_produto == codigo).select('preco_produto_lojinha'))[0].preco_produto_lojinha),2)
+        
+        valorTotal = int(qtde)* valorUn
         pass
     
     Itens.insert(codigoVenda=session.codigo_venda,codigoIten=codigo,produto=produto,quantidade=qtde,valorUnidade=valorUn,valorTotal=valorTotal)
@@ -135,9 +147,10 @@ def fecharVenda():
     valorVenda = index[1]
     valorDesconto = index[2]
     totalParcelas = index[4]
+    sendEmail = index[5]
+    sendEmailPara = index[6]
     # pegar o nome do representante e gravar o id no historico
     representante = 'sem representante'
-    enviarEmail = 'N'
 
      # Parcela, DataVencimento, Valor
     if tipoVenda == 'boleto' or tipoVenda == 'cheque':
@@ -156,9 +169,12 @@ def fecharVenda():
         valorT = (float(valorVenda) + float(valorDesconto))
         viewDesc = "<h3><b>Total</b> : R$ %.2f - <b>Desconto</b> : <span>R$ %.2f</span></h3>"%(valorT, float(valorDesconto))
 
-    if enviarEmail == 'S':
-        enviarEmail(codigoVenda)    
-
+    if sendEmail == 'true':
+        enviar_email(codigoVenda,sendEmailPara,(datetime.now()).strftime('%d/%m/%Y %H:%M:%S'))
+    else:
+        print 'email nao enviado'
+    
+    
     temp_codigoVenda = session.codigo_venda
     session.__delitem__('codigo_venda')
     session.__delitem__('cliente')
@@ -167,63 +183,60 @@ def fecharVenda():
 #--------------------------------    
 
 def reenviarEmail():
-    cod = request.vars.transitory
-    enviar_email(cod)
-    
-def enviar_email(codigo):
-    historico = db(db.historicoVendas.codigoVenda == '%s'%codigo).select('tipoVenda','valorVenda','valorDesconto','dataVenda','clienteEmail')
+    index = request.vars.transitory
+    index = index.split(';')
+    enviar_email(index[0],index[1],index[2]) 
+    # redirect(URL('etapa_2?menu=caixa'))  
+
+def enviar_email(codigo, email,data):
+    historico = db(db.historicoVendas.codigoVenda == '%s'%codigo).select()
     desconto = historico[0].valorDesconto
     total = historico[0].valorVenda
-    itens = crud.select(Itens, Itens.codigoVenda == '%s'%codigo,['codigoIten','quantidade','produto','valorUnidade','valorTotal'])
-    subTotal = (float(total)+float(desconto))
+    subTotal = total+desconto
+    total = "R$ %.2f"%total
     tipoVenda = historico[0].tipoVenda 
-    email = historico[0].clienteEmail
+    dataRomaneio = data
 
-    emailSimples = "|---------------- RECIBO DE COMPRA ----------------|\n" \
-    " ### ESSE DISPOSITIVO NAO E POSSIVEL VISUALIZAR OS DADOS ###\n" \
-    " ### Por gentileza visualize no seu email."
+    itens = crud.select(Itens, Itens.codigoVenda == '%s'%codigo,['codigoIten','quantidade','produto','valorUnidade','valorTotal'])
+
+    #gerar grid para email
+
+    # CHEQUE?
+    if tipoVenda == 'cheque':
+        parcelasCheque = ''
+    else:
+        parcelasCheque = ''
+        pass
+
 
     if desconto != 0.0:
-        mostrarDesconto = "[ Total =  R$ %.2f ] - [ Desconto = R$ %.2f ]"%(float(subTotal),float(desconto))
+        mostrarDesconto = "[ Total =  R$ %.2f ] - [ Desconto = R$ %.2f ]"%(subTotal,desconto)
     else:
-        mostrarDesconto = '' 
-    pass   
+        mostrarDesconto = ''
+    pass
+    # <!-- codigo, data, itens, sub_total, tipo_pagamento, desconto  -->
+    message = dict(codigo=codigo,itens=itens,sub_total=total,desconto=mostrarDesconto,tipo_pagamento=tipoVenda, cheques=parcelasCheque,data=dataRomaneio)
+    emailSimples = "|---------------- RECIBO DE COMPRA ----------------|\n"\
+    " ### ESSE DISPOSITIVO NAO E POSSIVEL VISUALIZAR OS DADOS ###\n"\
+    " ### Por gentileza visualize no seu email."
+    emailHTML = response.render('romaneio.html',message)
 
-    # comprovante do email com html
-    emailHTML = "<html><body>" \
-        "<div class='gl'><br>" \
-            "<div style='text-align:center'>" \
-                "<img src='../static/images/logoPrint.png' width='95pt'><hr>" \
-            "</div>" \
-            "<p><h3>Recibo ArtesanalBaby ( codigo : %s )</h3></p>" \
-            "<p>Recibo emitido em: %s</p>"\
-            "<div>" \
-                "<div class='table-responsive'>%s<script>$('.table-responsive table').addClass('table table-bordered');</script></div>" \
-                "%s" \
-                "<h4><b>SUB-TOTAL</b> = R$ %.2f  |  <b>Tipo pag</b> : %s </h4>" \
-            "</div><hr>" \
-            "<p>Nos visite: <a href='http://www.artesanalbaby.com.br'>www.artesanalbaby.com.br</a></p>"\
-            "<p><h3>Muito Obrigado pela compra! Volte sempre.</h3></p><br>" \
-        "</div></body></html>"%(codigo,(historico[0].dataVenda).strftime("%d/%m/%Y as %H:%M:%S"),itens,mostrarDesconto,float(total),tipoVenda) 
-   
     if mail:
-        if mail.send(to=["%s"%email],
-            subject='Recibo ArtesanalBaby Cod:',
-            message=[emailSimples, emailHTML]
+        if mail.send(to=[email],
+            subject='Recibo ArtesanalBaby Cod:%s'%codigo,
+            message=['emailSimples', emailHTML]
         ):
-            response.flash = 'Romaneio enviado a sucesso!'
+            session.flash = 'Romaneio enviado com sucesso!'
         else:
-            response.flash = 'Problema ao enviars o email!'
+            session.flash = 'Problema ao enviars o email!'
     else:
-        response.flash = 'Unable to send the email : email parameters not defined'  
-
+        session.flash = 'Unable to send the email : email parameters not defined'  
 
 
 #@auth.requires_membership('admin') 
 @auth.requires_login()
 def historico():
     # data atual
-    from datetime import datetime
     hoje = datetime.now()
     mesAno = hoje.strftime('%m/%Y')
     hoje = hoje.strftime('%Y-%m')#pega apenas o ano e mes atual
@@ -254,11 +267,17 @@ def historico():
     
     return dict(formListar=formListar, mesAtual=mesAno, form=form)
 
+def historico_busca():
+    return ''
+
 def historico_print():
     # codigo da venda
     cod_venda = request.vars.cod 
     # historico da venda ( venda referente ao cod_venda )
     historico_venda = db(Historico.codigoVenda == "%s"%cod_venda).select() 
+
+    dataVenda = historico_venda[0].dataVenda
+    dataVenda = dataVenda.strftime('%d/%m/%Y %H:%M:%S')
     # ok ate aqui
     # itens da venda 
     itens_venda =  db(Itens.codigoVenda == "%s"%cod_venda).select('codigoIten','quantidade','produto','valorUnidade','valorTotal')
@@ -270,7 +289,7 @@ def historico_print():
     else:
         itens_parcelas = ""
         pass    
-    return dict(historico_venda=historico_venda,itens_venda=itens_venda, itens_parcelas=itens_parcelas) 
+    return dict(historico_venda=historico_venda,itens_venda=itens_venda, itens_parcelas=itens_parcelas, dataVenda=dataVenda) 
 
 def cancelarVenda():  
     # limpar itens do db

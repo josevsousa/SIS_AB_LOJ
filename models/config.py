@@ -2,6 +2,9 @@
 # vendaAtual = Storage()  #vendaAtual é uma session
 # vendaAtual.codigo = 5555  #vendaAtual{'codigo':555}
 
+
+from datetime import datetime, timedelta
+
 class double_real(object):
     def __init__(self, valor):
         self.valor = valor

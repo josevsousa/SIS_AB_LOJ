@@ -1,5 +1,6 @@
 {{extend 'layoutLojinha.html'}}
 <script>
+var sendEmailResult = true;
 $(document).ready(function(){
 	    $("#btFecharCaixa").on('click',function(){
 	    	
@@ -28,6 +29,16 @@ $(document).ready(function(){
 		});	
 
 
+		$('#e_email').on('change',function(){
+			if (this.checked) {
+				sendEmailResult = true;
+				$('#email_romaneio').show(400)
+			} else {
+				sendEmailResult = false;
+				$('#email_romaneio').hide(400)
+			}
+		});	    
+
 	    function gravarCaix(){
 	    	  $("#btFecharCaixa").text("Enviando e-mail...").attr('disabled',true);
 		      var tipoVenda = $('.tpv').prop('value');
@@ -36,11 +47,13 @@ $(document).ready(function(){
 		      valorTotal = valorTotal.replace(',','.');
 		      var desconto = $('.vermelho').text().replace('R$','').trim();
 		      var representante = "ok";
+		      var sendEmail = sendEmailResult;
+		      var sendEmailPara = $('#email_romaneio').val();
 		      //var representante = "{{=session.representante}}";
 		      var totalParcelas = $('.parcelarC').val();
 		      // var enviarEmail = 'N';//buscar estado do check do checkbox enviar email
 		      // $("#transitory").val(tipoVenda+";"+valorTotal+";"+desconto+";"+representante+";"+enviarEmail);
-		      $("#transitory").val(tipoVenda+';'+valorTotal+';'+desconto+';'+representante+';'+ totalParcelas);
+		      $("#transitory").val(tipoVenda+';'+valorTotal+';'+desconto+';'+representante+';'+ totalParcelas+';'+sendEmail+';'+sendEmailPara);
 		      ajax('fecharVenda',['transitory']);
 		      $(location).attr('href',"etapa_1?menu=caixa");//redireciona a pagina
 	    }
@@ -288,9 +301,6 @@ $(document).ready(function(){
 	    padding: 35px 0px;
 	    display: -webkit-box;
 	}
-	div#enviarEmail {
-    	width: 147px;
-	}
 
 	div#calcDesc {
 	    padding: 5px 0px 0px 10px;
@@ -406,16 +416,17 @@ $(document).ready(function(){
 		          {{=sTotal_F}}	      
 		        </div>
 		    </div>
-		      <button type="button" id="btFecharCaixa" class="btn btn-default" disabled="disabled"><span class="glyphicon glyphicon-ok-circle"></span> Fechar caixa</button>
-		      <div class="col-md-3" id="enviarEmail">
+		      <button type="button" id="btFecharCaixa" class="btn btn-success btn-lg" disabled="disabled">Fechar caixa</button>
+		      <div id="enviarEmail">
 		        <div class="checkbox">
 		          <!-- enviar email? -->
 		          <label>
-		            <input id="e_email" name="e_email" type="checkbox">Enviar e-mail!
+		            <input id="e_email" checked="true" name="e_email" type="checkbox">Enviar e-mail!
 		          </label>
+				<input type='text' class="form-control" id='email_romaneio' value='{{=session.email_Cliente}}'></input>
 		        </div>
 		      </div>
-		      <button type="button" id="btCancelarCaixa" class="btn btn-danger"> <span class="glyphicon glyphicon-remove-circle"></span> Cancelar venda</button>
+		      <button type="button" id="btCancelarCaixa" class="btn btn-danger btn-xs"> cancelar</button>
 		  </div>
 	</div>  
 </div>

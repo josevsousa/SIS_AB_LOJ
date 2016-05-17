@@ -64,9 +64,9 @@ auth.define_tables(username=False, signature=False)
 
 # ## configure email: 'logging' or    o codigo esta no  models/e_mail.py
 mail = auth.settings.mailer
-mail.settings.server = 'logging' or 'mail.seusite.com.br:587'
-mail.settings.sender = 'user'
-mail.settings.login = 'senha'
+mail.settings.server = 'smtp.uol.com.br:587'
+mail.settings.sender = 'artesanalbaby@uol.com.br'
+mail.settings.login = 'artesanalbaby@uol.com.br:cl5010'
 
 
 

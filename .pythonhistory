@@ -84,3 +84,67 @@ print\040configProdutos.last()
 print\040configProdutos.last().almento()
 print\040configProdutos.last().almento
 quit()
+print db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular')
+print db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular')[0].celular
+print db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular','operadora')[0].celular
+print db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular','operadora')[0]
+print db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular','operadora')
+cli =  db(db.clientes.nome=='MARIA EDILIA FERNANDES VIEIRA').select('celular','operadora')
+cli[0].celular
+cli[0].operadora
+x()
+quit()
+db(db.historicoVendas.codigoVenda == '160516280813').select('tipoVenda','valorVenda','valorDesconto','dataVenda','clienteEmail')
+print db(db.historicoVendas.codigoVenda == '160516280813').select()
+historico =  db(db.historicoVendas.codigoVenda == '160516280813').select()
+historico[0].valorDesconto
+historico[0].valorVenda
+historico[0].total
+historico[0].tipoVenda
+historico[0].email
+historico[0].clienteEmail
+historico =  db(db.historicoVendas.codigoVenda == '160516434813').select()
+historico[0].total
+historico[0].tipoVenda
+historico[0].totalVenda
+historico[0].total_Venda
+historico[0].subTotal
+historico[0]
+historico[0].valorVenda
+historico[0].desconto
+historico[0].total
+historico[0].valorVenda
+historico[0].tipoVenda
+historico =  db(db.historicoVendas.codigoVenda == '160516365513').select()
+historico[0].valorVenda
+total = historico
+total = historico[0].valorVenda
+total
+total = float(total)
+total
+total = historico[0].valorVenda
+total
+total*2
+desconto = historico[0].valorDesconto
+desconto
+total-desconto
+session.email_cliente
+print session.email_cliente
+print session.email_Cliente
+print session.email_cliente
+print session.email_cliente()
+print session.email_cliente
+print session.cliente
+session
+print session
+print session()
+quit()
+print session()
+print session
+print session.cliente
+var x = 10.5555
+x = 10.5555
+x
+round(x,2)
+datetime.now()
+quit()
