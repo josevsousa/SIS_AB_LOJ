@@ -240,6 +240,8 @@ def historico():
     # data atual
     hoje = datetime.now()
     mesAno = hoje.strftime('%m/%Y')
+    ano = hoje.strftime('%Y')
+    mes = hoje.strftime('%m')
     hoje = hoje.strftime('%Y-%m')#pega apenas o ano e mes atual
 
     # formulario de busca entre datas
@@ -266,7 +268,50 @@ def historico():
         #buscar registro do mes e ano atual
         formListar = db(db.historicoVendas.dataVenda.like(hoje+'%')).select()#busca pelo ano e mes atual    
     
-    return dict(formListar=formListar, mesAtual=mesAno, form=form)
+    # faturamento
+    tbody = TR()
+    mes = int(mes)
+    for i in range(mes): #varre a quantidade de mes desse ano ate o mes atual
+        i_str = str(i+1) #icrementa o loop do for em 1 pra tirar o numero 0 exp: 1,2,3,4...
+        mess = i_str.zfill(2) #incrementa o 1,2,3 em 01,02,03 referente ao mes
+        valor = db(db.historicoVendas.dataVenda.like('%s-%s%s'%(ano,mess,'%'))).select('valorVenda') #tabela dos meses desse ano
+        valor = valor.column() #pega os valores da coluna e coloca em um [10,2,56,2,65] etc..
+        total_mes = 0
+        for val in valor:
+            total_mes += val
+        if total_mes == 0:
+            print mes,"##############"
+            print i_str,"$$$$$$$$$$$$$$$"
+            if str(mes) == i_str:
+                tbody.append(TD(double_real(total_mes).real(),_class="destaque"))
+            else:
+                tbody.append(TD(double_real(total_mes).real(),_class="faturamento_pendente"))
+        else:
+            tbody.append(TD(double_real(total_mes).real()))
+
+    faturamento = TABLE( 
+        THEAD(
+            TR(
+                TH('Janeiro'),
+                TH('Fevereiro'),
+                TH('Março'),
+                TH('Abril'),
+                TH('Maio'),
+                TH('Junho'),
+                TH('Julho'),
+                TH('Agosto'),
+                TH('Setembro'),
+                TH('Outubro'),
+                TH('Novembro'),
+                TH('Desembro')
+                ),
+            ),
+        TBODY(tbody),
+        _class="table", _id="faturamento")
+
+
+
+    return dict(formListar=formListar, mesAtual=mesAno, form=form, faturamento=faturamento)
 
 def historico_busca():
     return ''
