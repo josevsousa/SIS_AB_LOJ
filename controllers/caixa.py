@@ -279,15 +279,16 @@ def historico():
         total_mes = 0
         for val in valor:
             total_mes += val
-        if total_mes == 0:
-            print mes,"##############"
-            print i_str,"$$$$$$$$$$$$$$$"
+
+        if total_mes != 0:
             if str(mes) == i_str:
+                print 'esse e o mes kkkkkkkkkk - ',i_str
                 tbody.append(TD(double_real(total_mes).real(),_class="destaque"))
             else:
-                tbody.append(TD(double_real(total_mes).real(),_class="faturamento_pendente"))
+                print 'esse nao e o mes mmmmmmmmmm - ',str(mes)
+                tbody.append(TD(double_real(total_mes).real()))
         else:
-            tbody.append(TD(double_real(total_mes).real()))
+            tbody.append(TD(double_real(total_mes).real(),_class="faturamento_pendente"))
 
 
     faturamento = TABLE( 
